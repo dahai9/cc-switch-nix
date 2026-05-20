@@ -16,6 +16,8 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: cachix/install-nix-action@v27
+
       - name: Get latest release
         id: latest
         run: |
