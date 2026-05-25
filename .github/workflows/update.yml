@@ -31,19 +31,28 @@ jobs:
         id: current
         run: |
           current=$(grep -oP 'version = "\K[^"]+' flake.nix | head -1)
+          hash_x64=$(grep -oP '"x86_64"\s*=\s*"\K[^"]+' flake.nix | head -1)
+          hash_arm=$(grep -oP '"arm64"\s*=\s*"\K[^"]+' flake.nix | head -1)
           echo "version=$current" >> "$GITHUB_OUTPUT"
+          echo "hash_x64=$hash_x64" >> "$GITHUB_OUTPUT"
+          echo "hash_arm=$hash_arm" >> "$GITHUB_OUTPUT"
 
       - name: Check if update needed
         run: |
           echo "Current: ${{ steps.current.outputs.version }}"
           echo "Latest:  ${{ steps.latest.outputs.version }}"
-          if [ "${{ steps.current.outputs.version }}" = "${{ steps.latest.outputs.version }}" ]; then
+          HASH_X64="${{ steps.current.outputs.hash_x64 }}"
+          HASH_ARM="${{ steps.current.outputs.hash_arm }}"
+          if [ "${{ steps.current.outputs.version }}" = "${{ steps.latest.outputs.version }}" ] \
+            && [[ "$HASH_X64" =~ ^sha256-.+=$ ]] \
+            && [[ "$HASH_ARM" =~ ^sha256-.+=$ ]]; then
             echo "Already up to date."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
         id: check
 
       - name: Download debs and compute hashes
+        id: hashes
         if: steps.check.outputs.skip != 'true'
         run: |
           VERSION="${{ steps.latest.outputs.version }}"
@@ -66,8 +75,13 @@ jobs:
         if: steps.check.outputs.skip != 'true'
         run: |
           VERSION="${{ steps.latest.outputs.version }}"
-          HASH_X64="${{ steps.hash_x64 }}"
-          HASH_ARM="${{ steps.hash_arm }}"
+          HASH_X64="${{ steps.hashes.outputs.hash_x64 }}"
+          HASH_ARM="${{ steps.hashes.outputs.hash_arm }}"
+
+          if [[ ! "$HASH_X64" =~ ^sha256-.+=$ ]] || [[ ! "$HASH_ARM" =~ ^sha256-.+=$ ]]; then
+            echo "Invalid hash output: x86_64='$HASH_X64' arm64='$HASH_ARM'" >&2
+            exit 1
+          fi
 
           sed -i "s|version = \".*\";|version = \"${VERSION}\";|" flake.nix
           sed -i "s|\"x86_64\" = \".*\";|\"x86_64\" = \"${HASH_X64}\";|" flake.nix

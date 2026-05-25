@@ -21,8 +21,8 @@
 
       # sha256 hashes for each arch's .deb
       debHashes = {
-        "x86_64" = "";
-        "arm64"  = "";
+        "x86_64" = "sha256-pSVGNlsEaiSdWcPYnlX1OxvR8IHKfZdC/WlmN55u7yo=";
+        "arm64"  = "sha256-hTLf5wIY7z+Qxhfl57/RYNeGff8v/UTDEM5UbSf5rok=";
       };
 
       mkPackage = pkgs:
