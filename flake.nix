@@ -21,15 +21,15 @@
 
       # sha256 hashes for each arch's .deb
       debHashes = {
-        "x86_64" = "sha256-vZ3TDx9ayoUfxiB44WDjj9HfW7tDXqE+u8HE3NTw9ko=";
-        "arm64"  = "sha256-yLeCG6ZhFpKvTB9aBMBtPvlDXXqcDZSlNmXtfH8b26s=";
+        "x86_64" = "sha256-2Ynn42mYM5YTtlcVI3hWkXm8r0foH1Yc8EQ/qDC5ftI=";
+        "arm64"  = "sha256-RyBzXrpBC6z/ZwtUzjZogJVVY7LjZTQDEUZu/SdSIwU=";
       };
 
       mkPackage = pkgs:
         let
           inherit (pkgs) lib stdenv;
           arch = systemArchMap.${stdenv.hostPlatform.system};
-          version = "3.16.1";
+          version = "3.16.2";
         in
         stdenv.mkDerivation {
           pname = "cc-switch";
